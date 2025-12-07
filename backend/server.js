@@ -63,8 +63,84 @@ const startMockStream = () => {
         { type: 'token', content: "San " },
         { type: 'token', content: "Francisco." },
         { type: 'token', content: "</thinking>" },
-        { type: 'tool_call', name: 'vision_analyze', args: { mode: 1, image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?q=80&w=2000&auto=format&fit=crop', question: 'What is the weather like?' }, id: 'call_1' },
-        { type: 'tool_result', id: 'call_1', result: 'Sunny, 25C' },
+
+        // VisionAnalyze - VQA mode
+        {
+            type: 'tool_call',
+            name: 'vision_analyze',
+            id: 'call_vqa_1',
+            args: {
+                mode: 1,
+                image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?q=80&w=2000&auto=format&fit=crop',
+                question: 'What is the weather like?'
+            }
+        },
+        {
+            type: 'tool_result',
+            id: 'call_vqa_1',
+            result: {
+                status: 'ok',
+                data: {
+                    answer: 'It looks like a clear, sunny day with calm water.'
+                },
+                message: 'Vision VQA analysis completed.'
+            }
+        },
+
+        // VisionAnalyze - Grounding mode
+        {
+            type: 'tool_call',
+            name: 'vision_analyze',
+            id: 'call_ground_1',
+            args: {
+                mode: 2,
+                image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?q=80&w=2000&auto=format&fit=crop',
+                question: 'Where is the bridge?'
+            }
+        },
+        {
+            type: 'tool_result',
+            id: 'call_ground_1',
+            result: {
+                status: 'ok',
+                data: {
+                    objects: [
+                        {
+                            label: 'bridge',
+                            pixel_x: 900,
+                            pixel_y: 450,
+                            distance: 25.0,
+                            angle_deg: 0.0,
+                            confidence: 0.98
+                        }
+                    ],
+                    detection_count: 1
+                },
+                message: "Located the bridge in the scene."
+            }
+        },
+
+        // TakeAction tool example
+        {
+            type: 'tool_call',
+            name: 'take_action',
+            id: 'call_action_1',
+            args: {
+                action_name: 'Wave'
+            }
+        },
+        {
+            type: 'tool_result',
+            id: 'call_action_1',
+            result: {
+                status: 'ok',
+                data: {
+                    action_name: 'Wave'
+                },
+                message: "Successfully executed action 'Wave'."
+            }
+        },
+
         { type: 'token', content: "The " },
         { type: 'token', content: "weather " },
         { type: 'token', content: "is " },
@@ -96,7 +172,7 @@ setInterval(() => {
 // The previous second wss.on('connection') block is now integrated into the first one.
 // The setTimeout(startMockStream, 2000); call is removed as it was not part of the requested change.
 
-server.listen(3000, () => {
-    console.log('Server started on port 3000');
+server.listen(61111, () => {
+    console.log('Server started on port 61111');
 });
 

@@ -3,10 +3,10 @@ import websockets
 import json
 
 async def stream_data():
-    uri = "ws://localhost:3000"
+    uri = "ws://localhost:61111"
     
     steps = [
-        {"type": "user_request", "content": "Can you analyze this image for me?"},
+        {"type": "user_request", "content": "Can you analyze this image for me and then take an action?"},
         {"type": "token", "content": "Hello from Python! "},
         {"type": "token", "content": "I "},
         {"type": "token", "content": "am "},
@@ -16,18 +16,102 @@ async def stream_data():
         {"type": "token", "content": "<thinking>"},
         {"type": "token", "content": "Connecting "},
         {"type": "token", "content": "to "},
-        {"type": "token", "content": "neural "},
-        {"type": "token", "content": "engine... "},
+        {"type": "token", "content": "vision "},
+        {"type": "token", "content": "and "},
+        {"type": "token", "content": "action "},
+        {"type": "token", "content": "tools... "},
         {"type": "token", "content": "</thinking>"},
-        {"type": "tool_call", "name": "vision_analyze", "args": {"mode": 1, "image": "https://images.unsplash.com/photo-1542281286-9e0a56e2e1a1?q=80&w=2000&auto=format&fit=crop", "question": "Analyze this landscape"}, "id": "call_py_1"},
-        {"type": "tool_result", "id": "call_py_1", "result": "Mountainous landscape with forests"},
-        {"type": "token", "content": "The "},
-        {"type": "token", "content": "analysis "},
-        {"type": "token", "content": "is "},
-        {"type": "token", "content": "complete!"},
+
+        # VisionAnalyze - VQA mode (mode = 1)
+        {
+            "type": "tool_call",
+            "name": "vision_analyze",
+            "id": "call_py_vqa_1",
+            "args": {
+                "mode": 1,
+                "image": "https://images.unsplash.com/photo-1542281286-9e0a56e2e1a1?q=80&w=2000&auto=format&fit=crop",
+                "question": "What kind of landscape is this?"
+            },
+        },
+        {
+            "type": "tool_result",
+            "id": "call_py_vqa_1",
+            "result": {
+                "status": "ok",
+                "data": {
+                    "answer": "A mountainous landscape with dense forests and a lake."
+                },
+                "message": "Vision VQA analysis completed from Python client."
+            },
+        },
+
+        # VisionAnalyze - Grounding mode (mode = "grounding")
+        {
+            "type": "tool_call",
+            "name": "vision_analyze",
+            "id": "call_py_ground_1",
+            "args": {
+                "mode": "grounding",
+                "image": "https://images.unsplash.com/photo-1542281286-9e0a56e2e1a1?q=80&w=2000&auto=format&fit=crop",
+                "question": "Where is the mountain peak?"
+            },
+        },
+        {
+            "type": "tool_result",
+            "id": "call_py_ground_1",
+            "result": {
+                "status": "ok",
+                "data": {
+                    "objects": [
+                        {
+                            "label": "mountain peak",
+                            "pixel_x": 1400,
+                            "pixel_y": 250,
+                            "distance": 120.0,
+                            "angle_deg": 0.0,
+                            "confidence": 0.96,
+                        }
+                    ],
+                    "detection_count": 1,
+                },
+                "message": "Grounded the mountain peak position from Python client."
+            },
+        },
+
+        # TakeAction tool example
+        {
+            "type": "tool_call",
+            "name": "take_action",
+            "id": "call_py_action_1",
+            "args": {
+                "action_name": "Wave",
+            },
+        },
+        {
+            "type": "tool_result",
+            "id": "call_py_action_1",
+            "result": {
+                "status": "ok",
+                "data": {
+                    "action_name": "Wave",
+                },
+                "message": "Successfully executed action 'Wave' from Python client.",
+            },
+        },
+
+        # Generic/custom tool example still works and falls back to GenericTool
         {"type": "token", "content": "\nNow trying a generic tool...\n"},
-        {"type": "tool_call", "name": "custom_search", "args": {"query": "Latest AI agents", "filters": ["news", "code"]}, "id": "call_py_2"},
-        {"type": "tool_result", "id": "call_py_2", "result": {"hits": 5, "top_hit": "LangChain Agent"}}
+        {
+            "type": "tool_call",
+            "name": "custom_search",
+            "id": "call_py_2",
+            "args": {"query": "Latest AI agents", "filters": ["news", "code"]},
+        },
+        {
+            "type": "tool_result",
+            "id": "call_py_2",
+            "result": {"hits": 5, "top_hit": "LangChain Agent"},
+        },
     ]
 
     async with websockets.connect(uri) as websocket:
