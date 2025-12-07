@@ -165,7 +165,7 @@ async def stream_data():
         await websocket.send(json.dumps(register_msg))
         print(f"Sent: {register_msg}")
         
-        last_ping = asyncio.get_event_loop().time()
+        last_ping = asyncio.get_running_loop().time()
 
         for step in steps:
             await websocket.send(json.dumps(step))
