@@ -7,14 +7,30 @@ const server = http.createServer((req, res) => {
     res.end('Stream Viewer Backend');
 });
 
+// Relax HTTP idle timeouts so WebSocket upgrades are not closed prematurely
+const HTTP_IDLE_TIMEOUT_MS = Number(process.env.HTTP_IDLE_TIMEOUT_MS || 300000); // default 5m
+server.keepAliveTimeout = HTTP_IDLE_TIMEOUT_MS;
+server.headersTimeout = HTTP_IDLE_TIMEOUT_MS + 1000; // must be > keepAliveTimeout
+server.requestTimeout = 0; // disable per-request timeout
+
 const wss = new WebSocket.Server({ server });
+
+const HEARTBEAT_INTERVAL_MS = Number(process.env.WS_HEARTBEAT_INTERVAL_MS || 30000);
 
 // Map to store connected "agent/source" clients
 // Key: WebSocket object, Value: { id: string, name: string, type: 'source' | 'viewer' }
 const clients = new Map();
 
+// Simple ping/pong to keep connections alive
+function markAlive() {
+    this.isAlive = true;
+}
+
 wss.on('connection', (ws) => {
     console.log('Client connected');
+
+    ws.isAlive = true;
+    ws.on('pong', markAlive);
 
     // Default metadata
     clients.set(ws, {
@@ -83,6 +99,20 @@ wss.on('connection', (ws) => {
             clients.delete(ws);
         }
     });
+});
+
+const heartbeatInterval = setInterval(() => {
+    wss.clients.forEach((client) => {
+        if (client.isAlive === false) {
+            return client.terminate();
+        }
+        client.isAlive = false;
+        client.ping();
+    });
+}, HEARTBEAT_INTERVAL_MS);
+
+wss.on('close', () => {
+    clearInterval(heartbeatInterval);
 });
 
 function sendClientListTo(clientSocket) {
