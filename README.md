@@ -9,6 +9,7 @@ The backend acts as a WebSocket relay. It accepts connections from clients (like
 
 ```bash
 cd backend
+npm install 
 node server.js
 ```
 *Server runs on port 3000.*

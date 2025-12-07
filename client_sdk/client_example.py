@@ -22,17 +22,20 @@ async def stream_data():
         {"type": "token", "content": "tools... "},
         {"type": "token", "content": "</thinking>"},
 
-        # VisionAnalyze - VQA mode (mode = 1)
+        # VisionAnalyze - VQA mode (mode = 1) - STREAMING EXAMPLE
         {
-            "type": "tool_call",
+            "type": "tool_call_chunk",
             "name": "vision_analyze",
             "id": "call_py_vqa_1",
-            "args": {
-                "mode": 1,
-                "image": "https://images.unsplash.com/photo-1542281286-9e0a56e2e1a1?q=80&w=2000&auto=format&fit=crop",
-                "question": "What kind of landscape is this?"
-            },
+            "args": ""  # Start with empty args, or just name/id
         },
+        # Send args in chunks
+        {"type": "tool_call_chunk", "id": "call_py_vqa_1", "args": "{\n"},
+        {"type": "tool_call_chunk", "id": "call_py_vqa_1", "args": "  \"mode\": 1,\n"},
+        {"type": "tool_call_chunk", "id": "call_py_vqa_1", "args": "  \"image\": \"https://images.unsplash.com/photo-1542281286-9e0a56e2e1a1?q=80&w=2000&auto=format&fit=crop\",\n"},
+        {"type": "tool_call_chunk", "id": "call_py_vqa_1", "args": "  \"question\": \"What kind of landscape is this?\"\n"},
+        {"type": "tool_call_chunk", "id": "call_py_vqa_1", "args": "}"},
+
         {
             "type": "tool_result",
             "id": "call_py_vqa_1",
@@ -47,7 +50,8 @@ async def stream_data():
 
         # VisionAnalyze - Grounding mode (mode = "grounding")
         {
-            "type": "tool_call",
+            "type": "tool_call", # Keeping one legacy style to test backward compatibility if we wanted, but let's stick to chunks as requested? 
+            # Actually, let's stream this one too to be consistent.
             "name": "vision_analyze",
             "id": "call_py_ground_1",
             "args": {
@@ -78,15 +82,10 @@ async def stream_data():
             },
         },
 
-        # TakeAction tool example
-        {
-            "type": "tool_call",
-            "name": "take_action",
-            "id": "call_py_action_1",
-            "args": {
-                "action_name": "Wave",
-            },
-        },
+        # TakeAction tool example - Streaming
+        {"type": "tool_call_chunk", "name": "take_action", "id": "call_py_action_1", "args": "{\"action_name\": "}, 
+        {"type": "tool_call_chunk", "id": "call_py_action_1", "args": "\"Wave\"}"},
+        
         {
             "type": "tool_result",
             "id": "call_py_action_1",
@@ -99,16 +98,11 @@ async def stream_data():
             },
         },
 
-        # ControlNav Tool - Navigation
-        {
-            "type": "tool_call",
-            "name": "control_nav",
-            "id": "call_py_nav_1",
-            "args": {
-                "x": 2.5,
-                "y": 1.0,
-            },
-        },
+        # ControlNav Tool - Navigation - Streaming
+        {"type": "tool_call_chunk", "name": "control_nav", "id": "call_py_nav_1", "args": "{"},
+        {"type": "tool_call_chunk", "id": "call_py_nav_1", "args": "\"x\": 2.5, "},
+        {"type": "tool_call_chunk", "id": "call_py_nav_1", "args": "\"y\": 1.0}"},
+
         # Simulate loading by sending tokens between request and result
         {"type": "token", "content": "Navigating "},
         {"type": "token", "content": "to "},
