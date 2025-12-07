@@ -170,7 +170,7 @@ async def stream_data():
         for step in steps:
             await websocket.send(json.dumps(step))
             print(f"Sent: {step}")
-            # 定期发送 ping 维持长连
+            # Periodically send pings to maintain the long-lived connection
             now = asyncio.get_event_loop().time()
             if now - last_ping > 20:
                 await websocket.ping()
