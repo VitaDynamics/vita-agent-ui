@@ -21,13 +21,21 @@ const HEARTBEAT_INTERVAL_MS = Number(process.env.WS_HEARTBEAT_INTERVAL_MS || 200
 // Key: WebSocket object, Value: { id: string, name: string, type: 'source' | 'viewer' }
 const clients = new Map();
 
+function logWithTimestamp(...args) {
+    console.log(`[${new Date().toISOString()}]`, ...args);
+}
+
+function errorWithTimestamp(...args) {
+    console.error(`[${new Date().toISOString()}]`, ...args);
+}
+
 // Simple ping/pong to keep connections alive
 function markAlive() {
     this.isAlive = true;
 }
 
 wss.on('connection', (ws) => {
-    console.log('Client connected');
+    logWithTimestamp('Client connected');
 
     ws.isAlive = true;
     ws.on('pong', markAlive);
@@ -85,7 +93,7 @@ wss.on('connection', (ws) => {
                 clientInfo.type = 'source'; // registered clients are sources
                 clients.set(ws, clientInfo);
 
-                console.log(`Client registered: ${clientInfo.name} (${clientInfo.id})`);
+                logWithTimestamp(`Client registered: ${clientInfo.name} (${clientInfo.id})`);
                 broadcastClientList();
                 return;
             }
@@ -112,12 +120,12 @@ wss.on('connection', (ws) => {
             }
 
         } catch (e) {
-            console.error("Invalid JSON received", e);
+            errorWithTimestamp("Invalid JSON received", e);
         }
     });
 
     ws.on('close', () => {
-        console.log('Client disconnected');
+        logWithTimestamp('Client disconnected');
         const clientInfo = clients.get(ws);
 
         // Only broadcast if a SOURCE disconnected
@@ -190,6 +198,6 @@ const PORT = process.env.PORT || 61111;
 const HOST = process.env.HOST || '0.0.0.0';
 
 server.listen(PORT, HOST, () => {
-    console.log(`Server started on port ${PORT}`);
+    logWithTimestamp(`Server started on port ${PORT}`);
 });
 

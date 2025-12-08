@@ -7,6 +7,9 @@ export function useStreamIngestion(url: string) {
     const [availableClients, setAvailableClients] = useState<ClientInfo[]>([]);
     const [activeClientId, setActiveClientId] = useState<string | null>(null);
 
+    // Timeout ref for debouncing disconnects
+    const disconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     // Map clientId -> StreamParser instance
     const parsersRef = useRef<Map<string, StreamParser>>(new Map());
     // Map clientId -> StreamState
@@ -25,12 +28,34 @@ export function useStreamIngestion(url: string) {
                 const data: ServerMessage = JSON.parse(event.data);
 
                 if (data.type === 'client_list') {
-                    setAvailableClients(data.clients);
-                    // Auto-select first client if none selected
-                    setActiveClientId(prev => {
-                        if (prev && data.clients.find(c => c.id === prev)) return prev;
-                        return data.clients.length > 0 ? data.clients[0].id : null;
-                    });
+                    const updateClients = () => {
+                        setAvailableClients(data.clients);
+                        // Auto-select first client IF none selected AND we have clients
+                        // If we have no clients, we KEEP the current activeClientId to show cached data
+                        if (data.clients.length > 0) {
+                            setActiveClientId((prev: string | null) => {
+                                if (prev && data.clients.find(c => c.id === prev)) return prev;
+                                return data.clients[0].id;
+                            });
+                        }
+                    };
+
+                    if (data.clients.length > 0) {
+                        // If we have clients, clear any pending disconnect timeout and update immediately
+                        if (disconnectTimeoutRef.current) {
+                            clearTimeout(disconnectTimeoutRef.current);
+                            disconnectTimeoutRef.current = null;
+                        }
+                        updateClients();
+                    } else {
+                        // If client list is empty, start a grace period before clearing UI
+                        if (!disconnectTimeoutRef.current) {
+                            disconnectTimeoutRef.current = setTimeout(() => {
+                                updateClients();
+                                disconnectTimeoutRef.current = null;
+                            }, 5000); // 5s grace period
+                        }
+                    }
                 } else if (data.type === 'broadcast') {
                     const { clientId, message } = data;
 
@@ -43,7 +68,7 @@ export function useStreamIngestion(url: string) {
 
                     const updatedBlocks = parser.processChunk(message);
 
-                    setClientStreams(prev => ({
+                    setClientStreams((prev: Record<string, StreamState>) => ({
                         ...prev,
                         [clientId]: {
                             blocks: updatedBlocks,
@@ -67,6 +92,9 @@ export function useStreamIngestion(url: string) {
         };
 
         return () => {
+            if (disconnectTimeoutRef.current) {
+                clearTimeout(disconnectTimeoutRef.current);
+            }
             ws.close();
         };
     }, [url]);
