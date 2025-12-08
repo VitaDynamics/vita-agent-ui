@@ -47,6 +47,14 @@ wss.on('connection', (ws) => {
         try {
             const data = JSON.parse(message);
 
+            // Log received message (truncate long strings like base64 images)
+            console.log('Received:', JSON.stringify(data, (key, value) => {
+                if (key === 'image_base64' && typeof value === 'string' && value.length > 50) {
+                    return value.substring(0, 20) + '...[TRUNCATED]';
+                }
+                return value;
+            }));
+
             // Handle Registration
             if (data.type === 'register') {
                 const clientInfo = clients.get(ws);
