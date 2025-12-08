@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, MapPin, Loader2, Maximize } from 'lucide-react';
-import { UIEvent, VisionImageCapturedEvent, VisionStereoCapturedEvent, VisionVQAResultEvent, Vision2DDetectionResultEvent, Vision3DResultEvent } from '../../schemas';
+import { UIEvent, VisionImageCapturedEvent, VisionStereoCapturedEvent, VisionVQAResultEvent, Vision2DDetectionResultEvent, Vision3DResultEvent, VisionVQAStartEvent } from '../../schemas';
 
 type VisionToolProps = {
     args: any;
@@ -50,6 +50,10 @@ export const VisionTool: React.FC<VisionToolProps> = ({ args, result, events }) 
 
     // Prefer event image if available (real-time), else args image
     const image: string | undefined = capturedImage || args?.image;
+
+    // Find start events for query fallback
+    const vqaStartEvent = events?.find(e => e.event_type === 'vision_vqa_start') as VisionVQAStartEvent | undefined;
+
     const question: string | undefined = args?.question ?? args?.query;
 
     const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
@@ -130,8 +134,16 @@ export const VisionTool: React.FC<VisionToolProps> = ({ args, result, events }) 
                         </div>
                     )}
                     {vqaResultEvent && (
-                        <div className="text-[10px] text-gray-400 mt-1 flex justify-end">
-                            {vqaResultEvent.total_time_ms.toFixed(0)}ms
+                        <div className="flex justify-between items-center text-[10px] text-gray-400 mt-1">
+                            {vqaStartEvent?.camera_position && (
+                                <div className="flex gap-2">
+                                    <span>Pitch: {vqaStartEvent.camera_position.pitch}°</span>
+                                    <span>Yaw: {vqaStartEvent.camera_position.yaw}°</span>
+                                </div>
+                            )}
+                            <div className="ml-auto">
+                                {vqaResultEvent.total_time_ms.toFixed(0)}ms
+                            </div>
                         </div>
                     )}
                 </div>
