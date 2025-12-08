@@ -112,8 +112,8 @@ wss.on('connection', (ws) => {
 const heartbeatInterval = setInterval(() => {
     wss.clients.forEach((client) => {
         if (client.isAlive === false) {
-            console.log(`Terminating stale connection: ${clients.get(client)?.id}`);
-            return client.terminate();
+            console.log(`Connection missed heartbeat: ${clients.get(client)?.id} (Not terminating)`);
+            // return client.terminate();
         }
         client.isAlive = false;
         client.ping();
