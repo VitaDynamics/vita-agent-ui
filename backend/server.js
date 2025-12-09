@@ -63,7 +63,7 @@ wss.on("connection", (ws) => {
       const data = JSON.parse(message);
 
       // Log received message (truncate long strings like base64 images)
-      console.log(
+      logWithTimestamp(
         "Received:",
         JSON.stringify(data, (key, value) => {
           if (
