@@ -30,6 +30,31 @@ function safeSend(clientSocket, message) {
   }
 }
 
+function terminateAndCleanup(client, clientsMap, wssInstance, options = {}) {
+  const { logMessage, terminationErrorMessage } = options;
+  const clientInfo = clientsMap.get(client);
+
+  if (logMessage) {
+    logWithTimestamp(
+      `${logMessage}: ${clientInfo?.id || "unknown"}. Terminating.`
+    );
+  }
+
+  try {
+    client.terminate();
+  } catch (err) {
+    errorWithTimestamp(
+      terminationErrorMessage || "Failed to terminate client",
+      err
+    );
+  }
+
+  clientsMap.delete(client);
+  if (clientInfo && clientInfo.type === "source") {
+    broadcastClientList(wssInstance, clientsMap);
+  }
+}
+
 function getActiveSources(clients) {
   return Array.from(clients.values())
     .filter((info) => info.type === "source")
@@ -101,4 +126,5 @@ module.exports = {
   broadcastClientList,
   formatMessageForLog,
   attachImageFromUrl,
+  terminateAndCleanup,
 };

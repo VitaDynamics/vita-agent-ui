@@ -10,6 +10,7 @@ const {
   formatMessageForLog,
   attachImageFromUrl,
   safeSend,
+  terminateAndCleanup,
 } = require("./wsHelpers");
 
 const server = http.createServer((req, res) => {
@@ -114,42 +115,21 @@ wss.on("connection", (ws) => {
 const heartbeatInterval = setInterval(() => {
   wss.clients.forEach((client) => {
     if (client.isAlive === false) {
-      const clientInfo = clients.get(client);
-      logWithTimestamp(
-        `Connection missed heartbeat: ${
-          clientInfo?.id || "unknown"
-        }. Terminating.`
-      );
-      try {
-        client.terminate();
-      } catch (err) {
-        errorWithTimestamp("Failed to terminate unresponsive client", err);
-      }
-      clients.delete(client);
-      // Only broadcast when a source disappears to keep viewers in sync
-      if (clientInfo && clientInfo.type === "source") {
-        broadcastClientList(wss, clients);
-      }
+      terminateAndCleanup(client, clients, wss, {
+        logMessage: "Connection missed heartbeat",
+        terminationErrorMessage: "Failed to terminate unresponsive client",
+      });
       return;
     }
     client.isAlive = false;
     try {
       client.ping();
     } catch (err) {
-      const clientInfo = clients.get(client);
       errorWithTimestamp("Failed to ping client", err);
-      try {
-        client.terminate();
-      } catch (terminateErr) {
-        errorWithTimestamp(
-          "Failed to terminate after ping error",
-          terminateErr
-        );
-      }
-      clients.delete(client);
-      if (clientInfo && clientInfo.type === "source") {
-        broadcastClientList(wss, clients);
-      }
+      terminateAndCleanup(client, clients, wss, {
+        logMessage: "Connection ping failed",
+        terminationErrorMessage: "Failed to terminate after ping error",
+      });
     }
   });
 }, HEARTBEAT_INTERVAL_MS);

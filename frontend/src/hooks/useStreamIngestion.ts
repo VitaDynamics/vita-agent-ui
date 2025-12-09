@@ -78,12 +78,7 @@ export function useStreamIngestion(url: string) {
                 return data.clients[0].id;
               });
             } else {
-              // If client list is empty, clear the active client
-              setActiveClientId((prev) => {
-                if (!prev) return prev;
-                const stillExists = data.clients.find((c) => c.id === prev);
-                return stillExists ? prev : null;
-              });
+              setActiveClientId(null);
             }
           };
 
