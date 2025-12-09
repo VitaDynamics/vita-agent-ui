@@ -14,7 +14,7 @@ npm install
 node server.js
 ```
 
-_Server runs on port 3000._
+_Server runs on port 61111._
 
 ### 2. Start the Frontend (Viewer)
 
