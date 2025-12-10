@@ -102,7 +102,7 @@ export const db = {
       blocks: data.blocks,
       isThinking: data.isThinking,
       isConnected: data.isConnected,
-      ttsState: data.ttsState,
+      ttsState: data.ttsState || { isSpeaking: false },
     };
   },
 
