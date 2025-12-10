@@ -71,7 +71,7 @@ export function useStreamIngestion(url: string) {
         // Initialize parsers with cached blocks
         Object.entries(cachedConversations).forEach(([clientId, state]) => {
           const parser = new StreamParser(state.blocks);
-          parser.ttsState = state.ttsState || { isSpeaking: false };
+          parser.ttsState = state.ttsState;
           parsersRef.current.set(clientId, parser);
         });
       } catch (err) {
