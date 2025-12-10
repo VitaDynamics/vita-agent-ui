@@ -133,8 +133,8 @@ export const db = {
     const tx = db.transaction(["clients", "conversations"], "readwrite");
 
     for (const client of clientsToRemove) {
-      await tx.objectStore("clients").delete(client.id);
-      await tx.objectStore("conversations").delete(client.id);
+      tx.objectStore("clients").delete(client.id);
+      tx.objectStore("conversations").delete(client.id);
     }
 
     await tx.done;
