@@ -19,6 +19,17 @@ async def stream_data():
     uri = os.getenv("WS_URI", "ws://localhost:61111")
     print(f"Connecting to {uri}")
 
+    # Remote demo image for testing direct <img src> rendering performance
+    demo_image_url = (
+        "https://vita-tmp.tos-cn-beijing.volces.com/vision/grounding/rectified/20251211/"
+        "e7342205cab9.jpg?response-content-disposition=attachment&X-Tos-Algorithm=TOS4-"
+        "HMAC-SHA256&X-Tos-Content-Sha256=UNSIGNED-PAYLOAD&X-Tos-Credential=AKLTZGYwZmYy"
+        "Y2Y2NDA5NDNlMzg3NzJkMjQzYjZjMTE1Y2I%2F20251211%2Ftos-cn-beijing.volces.com%2Ftos%"
+        "2Frequest&X-Tos-Date=20251211T091439Z&X-Tos-Expires=3600&X-Tos-SignedHeaders=ho"
+        "st&X-Tos-Signature=56219372110c59ace620c5d6f52a6843f4bb9f46f04b7e2a8c4d49047444"
+        "6903"
+    )
+
     # Generate or read Client ID
     client_id = sys.argv[1] if len(sys.argv) > 1 else f"agent_{str(uuid.uuid4())[:8]}"
     client_name = f"Agent {client_id}"
@@ -79,8 +90,9 @@ async def stream_data():
             "type": "ui_event",
             "event": {
                 "event_type": "vision_image_captured",
-                "image_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-                "image_format": "png",
+                "image_url": demo_image_url,
+                "image_base64": "",
+                "image_format": "jpeg",
                 "width": 1,
                 "height": 1,
             },
@@ -127,7 +139,8 @@ async def stream_data():
             "type": "ui_event",
             "event": {
                 "event_type": "vision_stereo_captured",
-                "image_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+                "image_url": demo_image_url,
+                "image_base64": "",
                 "image_format": "png",
                 "width": 1,
                 "height": 1,

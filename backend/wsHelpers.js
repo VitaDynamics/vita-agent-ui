@@ -99,22 +99,8 @@ async function attachImageFromUrl(data, logger, errorLogger) {
     return;
   }
 
-  try {
-    logger(`Fetching image from URL: ${data.event.image_url}`);
-    const response = await fetch(data.event.image_url);
-    if (!response.ok) {
-      errorLogger(
-        `Failed to fetch image from ${data.event.image_url}: ${response.statusText}`
-      );
-      return;
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    data.event.image_base64 = buffer.toString("base64");
-  } catch (err) {
-    errorLogger(`Error fetching image from ${data.event.image_url}:`, err);
-  }
+  // Let the frontend render the remote image directly to avoid download + base64 overhead.
+  logger(`Passing through image_url without fetching: ${data.event.image_url}`);
 }
 
 module.exports = {
