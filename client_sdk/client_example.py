@@ -19,6 +19,9 @@ async def stream_data():
     uri = os.getenv("WS_URI", "ws://localhost:61111")
     print(f"Connecting to {uri}")
 
+    # Remote demo image for testing direct <img src> rendering performance
+    demo_image_url = "https://youke2.picui.cn/s1/2025/12/11/693a9d5f34e0b.jpg"
+
     # Generate or read Client ID
     client_id = sys.argv[1] if len(sys.argv) > 1 else f"agent_{str(uuid.uuid4())[:8]}"
     client_name = f"Agent {client_id}"
@@ -79,10 +82,11 @@ async def stream_data():
             "type": "ui_event",
             "event": {
                 "event_type": "vision_image_captured",
-                "image_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-                "image_format": "png",
-                "width": 1,
-                "height": 1,
+                "image_url": demo_image_url,
+                "image_base64": "",
+                "image_format": "jpg",
+                "width": 960,
+                "height": 480,
             },
         },
         {
@@ -127,7 +131,8 @@ async def stream_data():
             "type": "ui_event",
             "event": {
                 "event_type": "vision_stereo_captured",
-                "image_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+                "image_url": demo_image_url,
+                "image_base64": "",
                 "image_format": "png",
                 "width": 1,
                 "height": 1,
